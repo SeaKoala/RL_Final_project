@@ -2,6 +2,7 @@ import pygame
 from pygame.locals import *
 
 
+
 def hex_to_rgb(hex_color):
     """
     Helper function to convert hex strings to RGB
@@ -73,3 +74,6 @@ class Board:
 
     def get_board(self):
         return self._surface
+
+    def get_board2(self):
+        return self._grid

@@ -8,6 +8,7 @@ from pygame.locals import *
 import sys
 import constants as const
 import time
+import numpy as np
 
 def render_2048(next_state):
     
@@ -76,16 +77,18 @@ if __name__ == '__main__':
   done = False
   moves = 0
   while not done:
-    action = env.np_random.choice(range(4), 1).item()
+    action = np.random.choice(range(4), 1)
     next_state, reward, done, info = env.step(action)
     moves += 1
 
-    print('Next Action: "{}"\n\nReward: {}'.format(
-      gym_2048.Base2048Env.ACTION_STRING[action], reward))
+    # print('Next Action: "{}"\n\nReward: {}'.format(
+    #   gym_2048.Base2048Env.ACTION_STRING[action], reward))
     env.render()
     render_2048(next_state) 
 
 
   print('\nTotal Moves: {}'.format(moves))
+
+
 
 
