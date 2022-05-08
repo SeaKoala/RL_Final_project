@@ -1,6 +1,8 @@
-import gym_2048
 import gym
-
+import gym_2048
+from mcts_general.agent import MCTSAgent
+from mcts_general.config import MCTSAgentConfig
+from mcts_general.game import DiscreteGymGame
 
 import board as b
 import pygame
@@ -9,53 +11,6 @@ import sys
 import constants as const
 import time
 import numpy as np
-
-
-def MCTS_move(searches_per_move, search_length, actions):
-
-    scores = np.zeros(4)
-    for first_index in range(4):
-        env = gym.make('2048-v0')
-        env.seed(42)
-        env.reset()
-        action = env.np_random.choice(range(4), 1).item()
-        next_state, reward, done, info = env.step(action)
-        for i in range(len(actions)):
-            action = actions[i]
-            next_state, reward, done, info = env.step(action)
-
-        first_state, reward, done, info = env.step(first_index)
-        scores[first_index] += reward
-        move_number =1
-        while not done and move_number < search_length:
-            action = np.random.choice(range(4), 1)
-            search_board, reward, done, info = env.step(action)
-            scores[first_index] += reward
-            move_number +=1
-            if (done):
-                scores[first_index] = -1000
-        env.close()
-                
-
-    best_move_index = np.argmax(scores)
-    return best_move_index
-
-def fake_move(actions):
-
-    scores = np.zeros(4)
-    for first_index in range(4):
-        env = gym.make('2048-v0')
-        env.seed(42)
-        env.reset()
-        for i in range(len(actions)):
-            action = actions[i]
-            next_state, reward, done, info = env.step(action)
-
-        first_state, reward, done, info = env.step(first_index)
-        scores[first_index] += reward   
-
-    best_move_index = np.argmax(scores)
-    return best_move_index
 
 def render_2048(next_state):
     
@@ -87,32 +42,29 @@ def render_2048(next_state):
     pygame.display.flip()
     return
 
-if __name__ == '__main__':
-    actions = []
-    env = gym.make('2048-v0')
-    env.seed(42)
+# configure agent
+config = MCTSAgentConfig()
+config.num_simulations = 200
+agent = MCTSAgent(config)
 
-    env.reset()
-    env.render()
+# init game
+game = DiscreteGymGame(env = gym.make('2048-v0'))
+state = game.reset()
+done = False
+reward = 0
+moves = 0
 
-    done = False
-    moves = 0
-    while not done:
-      action =  MCTS_move(20, 10, actions)
-      actions.append(action)
-      next_state, reward, done, info = env.step(action)
-      moves += 1
-
-      print('Next Action: "{}"\n\nReward: {}'.format(
+# run a trajectory
+while not done:
+    action = agent.step(game, state, reward, done)
+    state, reward, done = game.step(action)
+    moves += 1
+    
+    game.render()     # uncomment for environment rendering
+    print('Next Action: "{}"\n\nReward: {}'.format(
         gym_2048.Base2048Env.ACTION_STRING[action], reward))
-      env.render()
-      render_2048(next_state) 
+    render_2048(state) 
 
 
-    print('\nTotal Moves: {}'.format(moves))
-
-
-
-
-
-
+print('\nTotal Moves: {}'.format(moves))
+game.close()

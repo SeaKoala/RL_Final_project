@@ -11,23 +11,51 @@ import time
 import numpy as np
 
 
-def MCTS_move(searches_per_move, search_length, env):
+def MCTS_move(searches_per_move, search_length, actions):
+
     scores = np.zeros(4)
     for first_index in range(4):
-        new_new_env = env
-        first_state, reward, done, info = new_new_env.step(first_index)
+        env = gym.make('2048-v0')
+        env.seed(42)
+        env.reset()
+        action = env.np_random.choice(range(4), 1).item()
+        next_state, reward, done, info = env.step(action)
+        for i in range(len(actions)):
+            action = actions[i]
+            next_state, reward, done, info = env.step(action)
+
+        first_state, reward, done, info = env.step(first_index)
         scores[first_index] += reward
         move_number =1
         while not done and move_number < search_length:
             action = np.random.choice(range(4), 1)
-            search_board, reward, done, info = new_new_env.step(action)
+            search_board, reward, done, info = env.step(action)
             scores[first_index] += reward
             move_number +=1
+            if (done):
+                scores[first_index] = -1000
+        env.close()
                 
 
     best_move_index = np.argmax(scores)
     return best_move_index
 
+def fake_move(actions):
+
+    scores = np.zeros(4)
+    for first_index in range(4):
+        env = gym.make('2048-v0')
+        env.seed(42)
+        env.reset()
+        for i in range(len(actions)):
+            action = actions[i]
+            next_state, reward, done, info = env.step(action)
+
+        first_state, reward, done, info = env.step(first_index)
+        scores[first_index] += reward   
+
+    best_move_index = np.argmax(scores)
+    return best_move_index
 
 def render_2048(next_state):
     
@@ -60,29 +88,25 @@ def render_2048(next_state):
     return
 
 if __name__ == '__main__':
+    actions = []
     env = gym.make('2048-v0')
     env.seed(42)
 
     env.reset()
     env.render()
-    action = env.np_random.choice(range(4), 1).item()
-    next_state, reward, done, info = env.step(action)
-
-    env.render()
-    render_2048(next_state)   
 
     done = False
     moves = 0
     while not done:
-        # new_env = env
-        action =  MCTS_move(20, 10, env)
-        next_state, reward, done, info = env.step(action)
-        moves += 1
+      action =  fake_move(actions)
+      actions.append(action)
+      next_state, reward, done, info = env.step(action)
+      moves += 1
 
-        print('Next Action: "{}"\n\nReward: {}'.format(
-          gym_2048.Base2048Env.ACTION_STRING[action], reward))
-        env.render()
-        render_2048(next_state) 
+      print('Next Action: "{}"\n\nReward: {}'.format(
+        gym_2048.Base2048Env.ACTION_STRING[action], reward))
+      env.render()
+      render_2048(next_state) 
 
 
     print('\nTotal Moves: {}'.format(moves))
