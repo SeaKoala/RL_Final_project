@@ -12,6 +12,8 @@ import constants as const
 import time
 import numpy as np
 
+import time
+
 def render_2048(next_state):
     
     time.sleep(0.1)
@@ -42,29 +44,55 @@ def render_2048(next_state):
     pygame.display.flip()
     return
 
-# configure agent
-config = MCTSAgentConfig()
-config.num_simulations = 200
-agent = MCTSAgent(config)
+RO = [1,2,4,8,16,32,64,128,256,512,1024,2048]
+for d in range(len(RO)):
+    # configure agent
+    config = MCTSAgentConfig()
+    config.num_simulations = 5
+    config.number_of_roll_outs = RO[d]  # default =5
+    config.do_roll_outs = True
+    config.max_roll_out_depth = 32 # default = 20
+    agent = MCTSAgent(config)
 
-# init game
-game = DiscreteGymGame(env = gym.make('2048-v0'))
-state = game.reset()
-done = False
-reward = 0
-moves = 0
+    num_games = 5
+    maxTiles = np.zeros((num_games))
+    game_len = np.zeros((num_games))
 
-# run a trajectory
-while not done:
-    action = agent.step(game, state, reward, done)
-    state, reward, done = game.step(action)
-    moves += 1
-    
-    game.render()     # uncomment for environment rendering
-    print('Next Action: "{}"\n\nReward: {}'.format(
-        gym_2048.Base2048Env.ACTION_STRING[action], reward))
-    render_2048(state) 
+    for n in range(num_games):
+    # init game
+        game = DiscreteGymGame(env = gym.make('2048-v0'))
+        state = game.reset()
+        done = False
+        reward = 0
+        moves = 0
+
+        # run a trajectory
+        start_time = time.time()
+        while not done:
+            action = agent.step(game, state, reward, done)
+            state, reward, done = game.step(action)
+            # reward = np.max(state)
+            # reward = 16- np.count_nonzero(state)
+            moves += 1
+            
+            # game.render()     # uncomment for environment rendering
+            # print('Next Action: "{}"\n\nReward: {}'.format(
+                # gym_2048.Base2048Env.ACTION_STRING[action], reward))
+            # render_2048(state) 
 
 
-print('\nTotal Moves: {}'.format(moves))
-game.close()
+        # print('\nTotal Moves: {}'.format(moves))
+        # print('Max Tile: {}'.format(np.max(state)))
+        game_len[n] = moves
+        maxTiles[n] = np.max(state)
+
+        # print('game: {}'.format(n))
+        game.close()
+        # print("--- %s seconds ---" % (time.time() - start_time))
+    print('Roll outs: {}'.format(RO[d]))
+    for n in range(num_games):
+        print(game_len[n])
+
+    print('\n')
+    for n in range(num_games):
+        print(maxTiles[n])
