@@ -9,8 +9,9 @@ Python 3.7 is used. Simply run:
 pip install -r requirements.txt
 ````
 
-## How to Use
-Simply run:
+## How to run MCTS
+Navigate to MCTS directory
+Run:
 ````
 python MCTS.py
 ````
