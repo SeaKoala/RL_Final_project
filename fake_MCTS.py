@@ -88,28 +88,57 @@ def render_2048(next_state):
     return
 
 if __name__ == '__main__':
-    actions = []
-    env = gym.make('2048-v0')
-    env.seed(42)
-
-    env.reset()
-    env.render()
-
-    done = False
-    moves = 0
-    while not done:
-      action =  fake_move(actions)
-      actions.append(action)
-      next_state, reward, done, info = env.step(action)
-      moves += 1
-
-      print('Next Action: "{}"\n\nReward: {}'.format(
-        gym_2048.Base2048Env.ACTION_STRING[action], reward))
-      env.render()
-      render_2048(next_state) 
+    num_games = 2
+    maxTiles = np.zeros((num_games))
+    game_len = np.zeros((num_games))
+    fs = np.zeros((num_games))
 
 
-    print('\nTotal Moves: {}'.format(moves))
+    for n in range(num_games):
+        actions = []
+        env = gym.make('2048-v0')
+        # env.seed(42)
+
+        state = env.reset()
+        start_time = time.time()
+        # env.render()
+
+        done = False
+        moves = 0
+        while not done:
+          action =  action = np.random.choice(range(4), 1)
+          # actions.append(action)
+          next_state, reward, done, info = env.step(action)
+          moves += 1
+          fs[n] += reward
+
+          # print('Next Action: "{}"\n\nReward: {}'.format(
+          #   gym_2048.Base2048Env.ACTION_STRING[action], reward))
+          # env.render()
+          render_2048(next_state) 
+        game_len[n] = moves
+        maxTiles[n] = np.max(next_state)
+
+              # print('game: {}'.format(n))
+        env.close()
+    print("--- %s seconds ---" % (time.time() - start_time))
+              # print("--- %s seconds ---" % (time.time() - start_time))
+    # print('Roll outs: {}'.format(RO[d]))
+    for n in range(num_games):
+        print(game_len[n])
+
+    print('\n')
+    for n in range(num_games):
+        print(maxTiles[n])
+
+    print('\n')
+    for n in range(num_games):
+        print(fs[n])
+
+
+
+
+    # print('\nTotal Moves: {}'.format(moves))
 
 
 

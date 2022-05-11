@@ -44,19 +44,21 @@ def render_2048(next_state):
     pygame.display.flip()
     return
 
-RO = [1,2,4,8,16,32,64,128,256,512,1024,2048]
+# RO = [1,2,4,8,16,32,64,128,256,512,1024,2048]
+RO = [1]
 for d in range(len(RO)):
     # configure agent
     config = MCTSAgentConfig()
-    config.num_simulations = 5
-    config.number_of_roll_outs = RO[d]  # default =5
-    config.do_roll_outs = True
-    config.max_roll_out_depth = 32 # default = 20
+    config.num_simulations = 2048
+    config.number_of_roll_outs = 5  # default =5
+    config.do_roll_outs = False
+    config.max_roll_out_depth = 20 # default = 20
     agent = MCTSAgent(config)
 
-    num_games = 5
+    num_games = 1
     maxTiles = np.zeros((num_games))
     game_len = np.zeros((num_games))
+    fs = np.zeros((num_games))
 
     for n in range(num_games):
     # init game
@@ -65,12 +67,14 @@ for d in range(len(RO)):
         done = False
         reward = 0
         moves = 0
-
+        render_2048(state) 
         # run a trajectory
         start_time = time.time()
         while not done:
             action = agent.step(game, state, reward, done)
+
             state, reward, done = game.step(action)
+            fs[n] += reward
             # reward = np.max(state)
             # reward = 16- np.count_nonzero(state)
             moves += 1
@@ -78,7 +82,7 @@ for d in range(len(RO)):
             # game.render()     # uncomment for environment rendering
             # print('Next Action: "{}"\n\nReward: {}'.format(
                 # gym_2048.Base2048Env.ACTION_STRING[action], reward))
-            # render_2048(state) 
+            render_2048(state) 
 
 
         # print('\nTotal Moves: {}'.format(moves))
@@ -88,11 +92,14 @@ for d in range(len(RO)):
 
         # print('game: {}'.format(n))
         game.close()
-        # print("--- %s seconds ---" % (time.time() - start_time))
-    print('Roll outs: {}'.format(RO[d]))
-    for n in range(num_games):
-        print(game_len[n])
-
-    print('\n')
+        print(time.time() - start_time)
+    # print('RO: {}'.format(RO[d]))
+    # for n in range(num_games):
+    #     print(game_len[n])
+    # print('\n')
     for n in range(num_games):
         print(maxTiles[n])
+    print('\n')
+    for n in range(num_games):
+        print(fs[n])   
+    print('\n') 
