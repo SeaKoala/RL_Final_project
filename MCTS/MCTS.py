@@ -40,18 +40,18 @@ def render_2048(next_state): # Friendly UI
 
 
 # Run MCTS with various parameters
-# RO = [1,2,4,8,16,32,64,128,256,512,1024,2048]
-RO = [1] # Fixed parameters
+RO = [1,2,4,8,16,32,64,128,256,512]
+# RO = [1] # Fixed parameters
 for d in range(len(RO)):
     # configure agent
     config = MCTSAgentConfig()
-    config.num_simulations = 128
+    config.num_simulations = RO[d]
     config.number_of_roll_outs = 5  # default =5
     config.do_roll_outs = False
     config.max_roll_out_depth = 20 # default = 20
     agent = MCTSAgent(config)
 
-    num_games = 1 
+    num_games = 25 
     maxTiles = np.zeros((num_games))
     game_len = np.zeros((num_games))
     fs = np.zeros((num_games)) # final game score
@@ -63,7 +63,7 @@ for d in range(len(RO)):
         done = False
         reward = 0
         moves = 0
-        render_2048(state) # renders friendly UI
+        # render_2048(state) # renders friendly UI
         # run a trajectory
         start_time = time.time()
         while not done:
@@ -72,15 +72,15 @@ for d in range(len(RO)):
             fs[n] += reward
             # reward = 16- np.count_nonzero(state) # empty tile reward
             moves += 1
-            render_2048(state) 
+            # render_2048(state) 
 
         game_len[n] = moves
         maxTiles[n] = np.max(state)
 
         # print('game: {}'.format(n))
         game.close()
-        print(time.time() - start_time)
-    # print('Roll Outs: {}'.format(RO[d]))
+        # print(time.time() - start_time)
+    print('Sims: {}'.format(RO[d]))
     for n in range(num_games):
         print(maxTiles[n])
     print('\n')
